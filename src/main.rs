@@ -2,19 +2,14 @@
 // add web interface
 // add
 //import dependencies
-use grep::searcher;
-use pdf::{content::Operation, file::File, primitive::Primitive, PdfError};
+use pdf::file::File;
 use std::{
-    default,
     env::{self, args},
-    ops::Deref,
-    string,
     time::SystemTime,
 };
 use warp::Filter;
 
 // main search filter is using Aho - Corasick Algorithm search.
-use aho_corasick::AhoCorasick;
 
 pub struct FileResult {
     pub file_name: String,
@@ -71,10 +66,10 @@ pub enum FileType {
         3. Run Indexing on local   .
 */
 
-pub enum named_args {
-    setup,
-    run,
-    index,
+pub enum NamedArgs {
+    Setup,
+    Run,
+    Index,
 }
 
 #[tokio::main]
@@ -86,12 +81,10 @@ async fn main() {
      */
     let hello = warp::path!("hello" / String).map(|name| format!("Hello, {}!", name));
 
-    let public = warp::path!("public" / String).map(|file| warp::fs::file(file));
-
 
     let args_contain = warp::path!("args").map(move || warp::reply::json(&args));
 
-    let search = warp::path!("search" / String).map(|searcher| warp::reply::json(&{time ,data: &read_pdf(searcher)}));
+    let search = warp::path!("search" / String).map(read_pdf);
 
     // first class api router with first slash
     let first_class = warp::get().and(hello.or(args_contain).or(search));
@@ -114,46 +107,51 @@ fn read_pdf(keywords: String) -> String {
 
     let mut usize_vec: Vec<usize> = vec![];
 
-    let mut res : Vec<String> = vec!() ;
+    let mut res: Vec<String> = vec![];
 
-    
-    
     for page in file.pages() {
         let page = page.unwrap();
         if let Some(ref c) = page.contents {
             if c.to_string().contains(&keywords) {
-                let item_position = c.operations.iter(). position(|x| {
+                let item_position = c.operations.iter().position(|x| {
                     x.operator == "Tj"
                         && x.operands
                             .iter()
                             .any(|y| y.as_string().is_ok() && format!("{}", y).contains(&keywords))
                 });
-                
-                if let Some(position) = item_position  {
+
+                if let Some(position) = item_position {
                     usize_vec.push(position)
                 }
-                res.push(usize_vec
-                    .iter()
-                    .map(|pp| {
-                        c.operations[pp - 2..=pp + 40]
-                            .iter()
-                            .filter_map(|s| s.operands.iter().find(|y| y.as_string().is_ok()))
-                            .map(|p| {
-                                p.clone()
-                                    .as_string()
-                                    .unwrap()
-                                    .clone()
-                                    .into_string()
-                                    .unwrap_or_else(|_|"".to_string())
-                            })
-                            .collect::<Vec<String>>()
-                            .join(" ")
-                    })
-                    .collect::<Vec<String>>()
-                    .join("\n"))
+                res.push(
+                    usize_vec
+                        .iter()
+                        .map(|pp| {
+                            c.operations[pp - 2..=pp + 40]
+                                .iter()
+                                .filter_map(|s| s.operands.iter().find(|y| y.as_string().is_ok()))
+                                .map(|p| {
+                                    p.clone()
+                                        .as_string()
+                                        .unwrap()
+                                        .clone()
+                                        .into_string()
+                                        .unwrap_or_else(|_| "".to_string())
+                                })
+                                .collect::<Vec<String>>()
+                                .join(" ")
+                        })
+                        .collect::<Vec<String>>()
+                        .join("\n"),
+                )
             }
         }
     }
-
-    return res.iter().map(|k| k.to_string()).collect::<Vec<String>>().join("\n")
+    let then = now.elapsed();
+    return res
+        .iter()
+        .map(|k| k.to_string())
+        .collect::<Vec<String>>()
+        .join("\n")
+        + &format!(" \n Elapsed : {}", &then.unwrap().as_millis());
 }
