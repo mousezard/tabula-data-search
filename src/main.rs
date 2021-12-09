@@ -4,14 +4,16 @@ pub mod template;
 // add web interface
 // add
 //import dependencies
+use crate::SearchDirectory::Local;
 use pdf::file::File;
+use serde_json::json;
 use std::{
     env::{self, args},
     fs,
     time::SystemTime,
 };
+use template::Template;
 use warp::Filter;
-use crate::SearchDirectory::Local;
 
 // main search filter is using Aho - Corasick Algorithm search.
 
@@ -90,11 +92,19 @@ pub enum NamedArgs {
 
 impl SearchQuery {
     /*
-        Method to create new search Query   
+        Method to create new search Query
     */
 
-    pub fn new(search : String) -> SearchQuery{
-        SearchQuery { search_query: search, file_type: vec!(), scope: Scope { search_directory: vec!(Local{path : "".to_owned()}) } }
+    pub fn new(search: String) -> SearchQuery {
+        SearchQuery {
+            search_query: search,
+            file_type: vec![],
+            scope: Scope {
+                search_directory: vec![Local {
+                    path: "".to_owned(),
+                }],
+            },
+        }
     }
 
     /*
@@ -119,7 +129,7 @@ impl SearchQuery {
 
     pub fn read_pdf(self) -> String {
         let path = args().nth(1).expect("no file given");
-        
+
         println!("read: {}", path);
 
         let now = SystemTime::now();
@@ -137,7 +147,8 @@ impl SearchQuery {
                     let item_position = c.operations.iter().position(|x| {
                         x.operator == "Tj"
                             && x.operands.iter().any(|y| {
-                                y.as_string().is_ok() && format!("{}", y).contains(&self.search_query)
+                                y.as_string().is_ok()
+                                    && format!("{}", y).contains(&self.search_query)
                             })
                     });
 
@@ -181,11 +192,18 @@ impl SearchQuery {
 }
 
 impl Default for SearchQuery {
-    fn default() -> SearchQuery{
-        SearchQuery { search_query: "".to_string(), file_type: vec!(), scope: Scope { search_directory: vec!(Local{path : "".to_owned()}) } }
+    fn default() -> SearchQuery {
+        SearchQuery {
+            search_query: "".to_string(),
+            file_type: vec![],
+            scope: Scope {
+                search_directory: vec![Local {
+                    path: "".to_owned(),
+                }],
+            },
+        }
     }
 }
-
 
 #[tokio::main]
 async fn main() {
@@ -198,9 +216,15 @@ async fn main() {
 
     let args_contain = warp::path!("args").map(move || warp::reply::json(&args));
 
-    let search = warp::path!("search" / String).map(|query|SearchQuery::new(query).read_pdf());
-
-    let serve_search = warp::path!("search_serve" / String).map(|query|SearchQuery::new(query).read_pdf());
+    let search = warp::path!("serve_name" / String)
+        .map(|query: String| (query.clone(), SearchQuery::new(query).read_pdf()))
+        .map(|(query, content)| {
+            template::Template::handlebar(
+                "template",
+                json!({"res" : content,"query":query}),
+                template::Template::TEMPLATE.to_string(),
+            )
+        });
 
     // first class api router with first slash
     let first_class = warp::get().and(hello.or(args_contain).or(search));
