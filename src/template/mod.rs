@@ -8,6 +8,7 @@ pub mod Template {
     pub const TEMPLATE: &str = "<!DOCTYPE html>
     <html>
       <head>
+      <link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/water.css@2/out/water.css\">
         <title>Search Result</title>
       </head>
       <body>
