@@ -12,10 +12,49 @@ pub mod Template {
         <title>Search Result</title>
       </head>
       <body>
+      <form action=\"/search\" >
+      <div class=\"row\">
+      <label for=\"search\">search</label>
+      <input id=\"search\" name=\"search\" type=\"search\" placeholder=\"search here\"> 
+      <input type=\"submit\">
+      </div> 
+      </form>
         <h1>Result of Search \"{{query}}\"!</h1>
-        <p>{{res}}</p>
+        <table>
+        <thead>
+        <th>File name </th>
+        <th>Content</th>
+        </thead>
+        <tbody>
+        
+        {{#each res}}
+        <tr>
+        <td>{{this.0}}</td>
+        <td>{{this.1}}</td>
+        </tr>
+    {{/each}}
+    </tbody>
+
+        </table>
+        <ol>
+        <ol>
       </body>
     </html>";
+
+    pub const SEARCH_TEMPLATE: &str = "<!DOCTYPE html>
+    <html>
+      <head>
+      <link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/water.css@2/out/water.css\">
+        <title>Tabula Search</title>
+      </head>
+      <body>
+        <form action=\"/search\">
+        <label for=\"search\">search</label>
+        <input id=\"search\" name=\"search\" type=\"search\" placeholder=\"search here\"> 
+        <input type=\"submit\"> 
+        </form>
+      </body>
+    </html>";    
 
     #[derive(Serialize)]
     pub struct WithTemplate<T: Serialize> {
