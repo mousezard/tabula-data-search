@@ -15,9 +15,9 @@ cargo install tabula-data
 ## To-Do
  [x] Showing configuration  
  [x] Search Through pdf  
- [WIP] Search Through excel file
- [ ] p2plib integration 
- [ ] Search domain recursively  
+ [WIP] Search Through excel file 
+ [ ] p2plib integration  
+ [ ] Search domain recursively   
  [ ] Feature Feedback 
 
 ## Contributing
