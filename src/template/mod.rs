@@ -5,7 +5,9 @@ pub mod Template {
     use serde::Serialize;
     use serde_json::json;
 
-    pub const TEMPLATE: &str = "<!DOCTYPE html>
+
+    pub const TEMPLATE: &str =  
+    "<!DOCTYPE html>
     <html>
       <head>
       <link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/water.css@2/out/water.css\">

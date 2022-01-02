@@ -9,13 +9,16 @@ edition = "2018"
 tokio = { version = "1", features = ["full"] }
 warp = "0.3"
 grep = "0.2.8"
-pdf = "0.7.2"
 handlebars = "4.1.6"
 aho-corasick = "0.7.18"
 serde = "1.0.130"
 serde_json = "1.0"
 calamine = "0.18.0"
 libp2p = "0.41.0"
+itertools = "0.10.3"
+sled = "0.34"
+rayon = "1.5.1"
+lopdf = "0.27.0"
 
 [profile.release]
 opt-level = 3
